@@ -5,8 +5,6 @@ let ctx;
 let objects = [];
 let selectedIndex = -1;
 let readButton;
-const width = 320;
-const height = 240;
 
 async function setupModel() {
   model = await cocoSsd.load();
@@ -15,10 +13,10 @@ async function setupModel() {
 
 function setup() {
   video = createCapture(VIDEO);
-  video.size(width, height);
+  video.size(640, 480);
   video.hide();
 
-  canvas = createCanvas(width, height);
+  canvas = createCanvas(640, 480);
   canvas.parent('canvas-container');
   ctx = canvas.drawingContext;
 
@@ -29,6 +27,7 @@ function setup() {
 }
 
 function draw() {
+  clear();
   image(video, 0, 0);
 
   if (model) {
@@ -40,9 +39,6 @@ function draw() {
 }
 
 function drawBoxes() {
-  clear(); // Add this line to clear the canvas before drawing the boxes.
-  image(video, 0, 0);
-
   for (let i = 0; i < objects.length; i++) {
     let box = objects[i].bbox;
 
@@ -56,7 +52,6 @@ function drawBoxes() {
     rect(box[0], box[1], box[2], box[3]);
   }
 }
-
 
 function mouseClicked() {
   selectedIndex = -1;
