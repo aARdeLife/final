@@ -5,6 +5,8 @@ let ctx;
 let objects = [];
 let selectedIndex = -1;
 let readButton;
+let lastDetectionTime = 0;
+let detectionInterval = 200;
 
 async function setupModel() {
   model = await cocoSsd.load();
@@ -24,19 +26,27 @@ function setup() {
   readButton.addEventListener('click', readObjects);
 
   setupModel();
-  detectObjects();
 }
 
 function draw() {
   clear();
   image(video, 0, 0);
+
+  if (Date.now() - lastDetectionTime > detectionInterval) {
+    detectObjects();
+    lastDetectionTime = Date.now();
+  }
+
   drawBoxes();
 }
 
 async function detectObjects() {
   if (model) {
-    objects = await model.detect(video);
-    setTimeout(detectObjects, 200);
+    await tf.tidy(() => {
+      model.detect(video).then(predictions => {
+        objects = predictions;
+      });
+    });
   }
 }
 
