@@ -9,7 +9,6 @@ let readButton;
 async function setupModel() {
   model = await cocoSsd.load();
   console.log('Model loaded');
-  detectObjects();
 }
 
 function setup() {
@@ -27,16 +26,13 @@ function setup() {
   setupModel();
 }
 
-function draw() {
+async function draw() {
   image(video, 0, 0);
-  drawBoxes();
-}
 
-async function detectObjects() {
-  if (model && video.readyState === 4) {
+  if (model) {
     objects = await model.detect(video);
+    drawBoxes();
   }
-  requestAnimationFrame(detectObjects);
 }
 
 function drawBoxes() {
