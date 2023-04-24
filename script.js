@@ -1,53 +1,42 @@
 let video;
-let model;
+let objectDetector;
 let canvas;
-let ctx;
 let objects = [];
 let selectedIndex = -1;
 let readButton;
-let lastDetectionTime = 0;
-let detectionInterval = 200;
-
-async function setupModel() {
-  model = await cocoSsd.load();
-  console.log('Model loaded');
-}
 
 function setup() {
   video = createCapture(VIDEO);
-  video.size(1280, 720);
+  video.size(640, 480);
   video.hide();
 
-  canvas = createCanvas(1280, 720);
+  canvas = createCanvas(640, 480);
   canvas.parent('canvas-container');
-  ctx = canvas.drawingContext;
 
   readButton = document.getElementById('read-objects');
   readButton.addEventListener('click', readObjects);
 
-  setupModel();
+  objectDetector = ml5.objectDetector('cocossd', modelReady);
+}
+
+function modelReady() {
+  console.log('Model is ready');
+  objectDetector.detect(video, gotResults);
+}
+
+function gotResults(err, results) {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  objects = results;
+  objectDetector.detect(video, gotResults);
 }
 
 function draw() {
-  clear();
   image(video, 0, 0);
-
-  if (Date.now() - lastDetectionTime > detectionInterval) {
-    detectObjects();
-    lastDetectionTime = Date.now();
-  }
-
   drawBoxes();
-}
-
-async function detectObjects() {
-  if (model) {
-    await tf.tidy(() => {
-      model.detect(video).then(predictions => {
-        objects = predictions;
-      });
-    });
-  }
 }
 
 function drawBoxes() {
@@ -77,14 +66,8 @@ function mouseClicked() {
   }
 }
 
-function mousePressed() {
-  if (mouseButton === CENTER) {
-    mouseClicked();
-  }
-}
-
 function readObjects() {
-  let objectsNames = objects.map(obj => obj.class);
+  let objectsNames = objects.map(obj => obj.label);
   let sentence = objectsNames.join(', ');
   let utterance = new SpeechSynthesisUtterance(`Detected objects are: ${sentence}`);
   speechSynthesis.speak(utterance);
