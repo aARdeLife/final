@@ -1,74 +1,44 @@
-let video;
-let objectDetector;
-let canvas;
-let objects = [];
-let selectedIndex = -1;
-let readButton;
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const summaryBox = document.createElement('div');
 
-function setup() {
-  video = createCapture(VIDEO);
-  video.size(640, 480);
-  video.hide();
+summaryBox.style.position = 'absolute';
+summaryBox.style.padding = '10px';
+summaryBox.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+summaryBox.style.color = 'white';
+summaryBox.style.borderRadius = '5px';
+summaryBox.style.fontSize = '14px';
+summaryBox.style.maxWidth = '250px';
+summaryBox.style.display = 'none';
 
-  canvas = createCanvas(640, 480);
-  canvas.parent('canvas-container');
+document.body.appendChild(summaryBox);
 
-  readButton = document.getElementById('read-objects');
-  readButton.addEventListener('click', readObjects);
-
-  objectDetector = ml5.objectDetector('cocossd', modelReady);
+async function setupCamera() {
+    // Set up the webcam stream and connect it to the video element
 }
 
-function modelReady() {
-  console.log('Model is ready');
-  objectDetector.detect(video, gotResults);
+function isPointInRect(x, y, rect) {
+    // Check if a point is inside a rectangle
 }
 
-function gotResults(err, results) {
-  if (err) {
-    console.error(err);
-    return;
-  }
-
-  objects = results;
-  objectDetector.detect(video, gotResults);
+async function fetchWikipediaSummary(title) {
+    // Fetch a summary of the given title from Wikipedia using the Wikipedia REST API
 }
 
-function draw() {
-  image(video, 0, 0);
-  drawBoxes();
+canvas.addEventListener('click', async event => {
+    // Check if the click occurred inside the bounding box of any detected object
+    // If so, fetch and display the Wikipedia summary for the object in the summaryBox div element
+});
+
+async function detectObjects() {
+    // Use an object detection model to detect objects in the video stream
+    // Draw the bounding boxes on the canvas and display the object class names
 }
 
-function drawBoxes() {
-  for (let i = 0; i < objects.length; i++) {
-    let box = objects[i].bbox;
+(async function() {
+    const videoElement = await setupCamera();
+    videoElement.play();
+    detectObjects();
+})();
 
-    if (i === selectedIndex) {
-      stroke('green');
-    } else {
-      stroke('yellow');
-    }
-    strokeWeight(4);
-    noFill();
-    rect(box[0], box[1], box[2], box[3]);
-  }
-}
-
-function mouseClicked() {
-  selectedIndex = -1;
-
-  for (let i = 0; i < objects.length; i++) {
-    let box = objects[i].bbox;
-    if (mouseX >= box[0] && mouseX <= box[0] + box[2] && mouseY >= box[1] && mouseY <= box[1] + box[3]) {
-      selectedIndex = i;
-      break;
-    }
-  }
-}
-
-function readObjects() {
-  let objectsNames = objects.map(obj => obj.label);
-  let sentence = objectsNames.join(', ');
-  let utterance = new SpeechSynthesisUtterance(`Detected objects are: ${sentence}`);
-  speechSynthesis.speak(utterance);
-}
