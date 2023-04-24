@@ -29,12 +29,13 @@ function setup() {
 function draw() {
   clear();
   image(video, 0, 0);
+  detectObjects();
+}
 
+async function detectObjects() {
   if (model) {
-    model.detect(video).then(predictions => {
-      objects = predictions;
-      drawBoxes();
-    });
+    objects = await model.detect(video);
+    drawBoxes();
   }
 }
 
@@ -76,16 +77,4 @@ function readObjects() {
   let sentence = objectsNames.join(', ');
   let utterance = new SpeechSynthesisUtterance(`Detected objects are: ${sentence}`);
   speechSynthesis.speak(utterance);
-}
-
-function modelReady() {
-  console.log('Model is ready!');
-}
-
-function gotResult(error, results) {
-  if (error) {
-    console.error(error);
-    return;
-  }
-  objects = results;
 }
