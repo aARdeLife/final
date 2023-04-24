@@ -40,6 +40,9 @@ function draw() {
 }
 
 function drawBoxes() {
+  clear(); // Add this line to clear the canvas before drawing the boxes.
+  image(video, 0, 0);
+
   for (let i = 0; i < objects.length; i++) {
     let box = objects[i].bbox;
 
@@ -54,49 +57,6 @@ function drawBoxes() {
   }
 }
 
-function mouseClicked() {
-  selectedIndex = -1;
-
-  for (let i = 0; i < objects.length; i++) {
-    let box = objects[i].bbox;
-    if (mouseX >= box[0] && mouseX <= box[0] + box[2] && mouseY >= box[1] && mouseY <= box[1] + box[3]) {
-      selectedIndex = i;
-      break;
-    }
-  }
-}
-
-function mousePressed() {
-  if (mouseButton === CENTER) {
-    mouseClicked();
-  }
-}
-
-function readObjects() {
-  let objectsNames = objects.map(obj => obj.class);
-  let sentence = objectsNames.join(', ');
-  let utterance = new SpeechSynthesisUtterance(`Detected objects are: ${sentence}`);
-  speechSynthesis.speak(utterance);
-}
-
-    });
-  }
-}
-
-function drawBoxes() {
-  for (let i = 0; i < objects.length; i++) {
-    let box = objects[i].bbox;
-
-    if (i === selectedIndex) {
-      stroke('green');
-    } else {
-      stroke('yellow');
-    }
-    strokeWeight(4);
-    noFill();
-    rect(box[0], box[1], box[2], box[3]);
-  }
-}
 
 function mouseClicked() {
   selectedIndex = -1;
