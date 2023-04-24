@@ -67,24 +67,13 @@ canvas.addEventListener('click', async event => {
     summaryBox.style.display = 'none';
 });
 
-function drawBoundingBoxes(predictions) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(video, 0, 0, video.width, video.height);
-
-    for (const prediction of predictions) {
-        const [x, y, width, height] = prediction.bbox;
-
-        ctx.strokeStyle = '#00FFFF';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, width, height);
-
-        ctx.fillStyle = '#00FFFF';
-        ctx.font = '14px sans-serif';
-        ctx.fillText(prediction.class, x, y - 10);
-    }
+async function detectObjects() {
+    // ... (previous code)
 }
 
-async function detectObjects() {
-    const model = await cocoSsd.load();
+(async function() {
+    const videoElement = await setupCamera();
+    videoElement.play();
+    detectObjects();
 })();
 
