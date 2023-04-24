@@ -29,7 +29,7 @@ function setup() {
 function draw() {
   image(video, 0, 0);
 
-  if (model) {
+  if (model && video.readyState === 4) {
     model.detect(video).then(predictions => {
       objects = predictions;
       drawBoxes();
@@ -76,4 +76,3 @@ function readObjects() {
   let utterance = new SpeechSynthesisUtterance(`Detected objects are: ${sentence}`);
   speechSynthesis.speak(utterance);
 }
- 
