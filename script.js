@@ -13,10 +13,10 @@ async function setupModel() {
 
 function setup() {
   video = createCapture(VIDEO);
-  video.size(640, 480);
+  video.size(1280, 720);
   video.hide();
 
-  canvas = createCanvas(640, 480);
+  canvas = createCanvas(1280, 720);
   canvas.parent('canvas-container');
   ctx = canvas.drawingContext;
 
@@ -24,18 +24,19 @@ function setup() {
   readButton.addEventListener('click', readObjects);
 
   setupModel();
+  detectObjects();
 }
 
 function draw() {
   clear();
   image(video, 0, 0);
-  detectObjects();
+  drawBoxes();
 }
 
 async function detectObjects() {
   if (model) {
     objects = await model.detect(video);
-    drawBoxes();
+    setTimeout(detectObjects, 200);
   }
 }
 
