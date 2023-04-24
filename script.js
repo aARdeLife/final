@@ -26,12 +26,14 @@ function setup() {
   setupModel();
 }
 
-async function draw() {
+function draw() {
   image(video, 0, 0);
 
   if (model) {
-    objects = await model.detect(video);
-    drawBoxes();
+    model.detect(video).then(predictions => {
+      objects = predictions;
+      drawBoxes();
+    });
   }
 }
 
