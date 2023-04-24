@@ -68,12 +68,37 @@ canvas.addEventListener('click', async event => {
 });
 
 async function detectObjects() {
-    // ... (previous code)
+    if (typeof cocoSsd === 'undefined') {
+        setTimeout(detectObjects, 50);
+        return;
+    }
+
+    const predictions = await cocoSsd.load().then((model) => model.detect(video));
+
+    currentPredictions = predictions;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, video.width, video.height);
+
+    for (const prediction of predictions) {
+        const x = prediction.bbox[0];
+        const y = prediction.bbox[1];
+        const width = prediction.bbox[2];
+        const height = prediction.bbox[3];
+
+        ctx.strokeStyle = '#00FFFF';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, width, height);
+        ctx.fillStyle = '#00FFFF';
+        ctx.font = '14px Arial';
+        ctx.fillText(prediction.class, x, y - 5);
+    }
+
+    requestAnimationFrame(detectObjects);
 }
 
-(async function() {
-    const videoElement = await setupCamera();
-    videoElement.play();
-    detectObjects();
-})();
+let currentPredictions = [];
 
+(async function () {
+    const videoElement = await setupCamera();
+   
