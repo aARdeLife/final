@@ -77,3 +77,15 @@ function readObjects() {
   let utterance = new SpeechSynthesisUtterance(`Detected objects are: ${sentence}`);
   speechSynthesis.speak(utterance);
 }
+
+function modelReady() {
+  console.log('Model is ready!');
+}
+
+function gotResult(error, results) {
+  if (error) {
+    console.error(error);
+    return;
+  }
+  objects = results;
+}
