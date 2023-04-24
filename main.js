@@ -15,8 +15,25 @@ summaryBox.style.display = 'none';
 document.body.appendChild(summaryBox);
 
 async function setupCamera() {
-    // Set up the webcam stream and connect it to the video element
+    const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480 },
+        audio: false
+    });
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+        video.width = video.videoWidth;
+        video.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+    };
+
+    return new Promise((resolve) => {
+        video.onloadeddata = () => {
+            resolve(video);
+        };
+    });
 }
+
 
 function isPointInRect(x, y, rect) {
     // Check if a point is inside a rectangle
