@@ -35,71 +35,25 @@ async function setupCamera() {
 }
 
 function isPointInRect(x, y, rect) {
-    return x >= rect[0] && x <= rect[0] + rect[2] && y >= rect[1] && y <= rect[1] + rect[3];
+    // Check if a point is inside a rectangle
 }
 
 async function fetchWikipediaSummary(title) {
-    const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-    if (response.ok) {
-        const data = await response.json();
-        return data.extract;
-    } else {
-        return 'No summary available';
-    }
+    // Fetch a summary of the given title from Wikipedia using the Wikipedia REST API
 }
 
 canvas.addEventListener('click', async event => {
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    for (const prediction of currentPredictions) {
-        if (isPointInRect(x, y, prediction.bbox)) {
-            const summary = await fetchWikipediaSummary(prediction.class);
-            summaryBox.style.display = 'block';
-            summaryBox.style.left = `${prediction.bbox[0] + prediction.bbox[2]}px`;
-            summaryBox.style.top = `${prediction.bbox[1]}px`;
-            summaryBox.textContent = summary;
-            return;
-        }
-    }
-
-    summaryBox.style.display = 'none';
+    // Check if the click occurred inside the bounding box of any detected object
+    // If so, fetch and display the Wikipedia summary for the object in the summaryBox div element
 });
 
-let currentPredictions = [];
-
 async function detectObjects() {
-    const model =     await cocoSsd.load();
-    const videoElement = await setupCamera();
-    videoElement.play();
-
-    async function detect() {
-        currentPredictions = await model.detect(video);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(video, 0, 0, video.width, video.height);
-
-        ctx.font = '16px Arial';
-        ctx.lineWidth = 3;
-
-        for (const prediction of currentPredictions) {
-            const [x, y, width, height] = prediction.bbox;
-
-            ctx.strokeStyle = 'red';
-            ctx.strokeRect(x, y, width, height);
-
-            ctx.fillStyle = 'red';
-            ctx.fillText(prediction.class, x, y - 5);
-        }
-
-        requestAnimationFrame(detect);
-    }
-
-    detect();
+    // Use an object detection model to detect objects in the video stream
+    // Draw the bounding boxes on the canvas and display the object class names
 }
 
 (async function() {
-    await setupCamera();
+    const videoElement = await setupCamera();
+    videoElement.play();
     detectObjects();
 })();
-
