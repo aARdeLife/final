@@ -35,16 +35,36 @@ async function setupCamera() {
 }
 
 function isPointInRect(x, y, rect) {
-    // Check if a point is inside a rectangle
+    return x >= rect[0] && x <= rect[0] + rect[2] && y >= rect[1] && y <= rect[1] + rect[3];
 }
 
 async function fetchWikipediaSummary(title) {
-    // Fetch a summary of the given title from Wikipedia using the Wikipedia REST API
+    const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+    if (response.ok) {
+        const data = await response.json();
+        return data.extract;
+    } else {
+        return 'No summary available';
+    }
 }
 
 canvas.addEventListener('click', async event => {
-    // Check if the click occurred inside the bounding box of any detected object
-    // If so, fetch and display the Wikipedia summary for the object in the summaryBox div element
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    for (const prediction of currentPredictions) {
+        if (isPointInRect(x, y, prediction.bbox)) {
+            const summary = await fetchWikipediaSummary(prediction.class);
+            summaryBox.style.display = 'block';
+            summaryBox.style.left = `${prediction.bbox[0] + prediction.bbox[2]}px`;
+            summaryBox.style.top = `${prediction.bbox[1]}px`;
+            summaryBox.textContent = summary;
+            return;
+        }
+    }
+
+    summaryBox.style.display = 'none';
 });
 
 function getColorBySize(bbox) {
@@ -84,6 +104,7 @@ async function detectObjects() {
 
     async function detectFrame() {
         const predictions = await model.detect(video);
+        currentPredictions = predictions;
         drawPredictions(predictions);
         requestAnimationFrame(detectFrame);
     }
@@ -91,9 +112,13 @@ async function detectObjects() {
     detectFrame();
 }
 
+let currentPredictions = [];
 
 (async function() {
     const videoElement = await setupCamera();
     videoElement.play();
     detectObjects();
 })();
+
+
+   
