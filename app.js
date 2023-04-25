@@ -67,12 +67,46 @@ canvas.addEventListener('click', async event => {
     summaryBox.style.display = 'none';
 });
 
+function getColorBySize(bbox) {
+    const area = bbox[2] * bbox[3];
+    const maxArea = canvas.width * canvas.height;
+    const ratio = area / maxArea;
+
+    const red = 255;
+    const green = Math.floor(255 * ratio);
+    const blue = 0;
+
+    return `rgb(${red}, ${green}, ${blue})`;
+}
+
+async function drawPredictions(predictions) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.font = '16px sans-serif';
+    ctx.textBaseline = 'top';
+
+    predictions.forEach(prediction => {
+        const x = prediction.bbox[0];
+        const y = prediction.bbox[1];
+        const width = prediction.bbox[2];
+        const height = prediction.bbox[3];
+
+        ctx.strokeStyle = getColorBySize(prediction.bbox);
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, width, height);
+
+        ctx.fillStyle = getColorBySize(prediction.bbox);
+        ctx.fillText(prediction.class, x, y);
+    });
+}
+
+let currentPredictions = [];
+
 async function detectObjects() {
     const model = await cocoSsd.load();
 
     async function detectFrame() {
-        const predictions = await model.detect(video);
-        drawPredictions(predictions);
+        currentPredictions = await model.detect(video);
+        drawPredictions(currentPredictions);
         requestAnimationFrame(detectFrame);
     }
 
@@ -84,3 +118,4 @@ async function detectObjects() {
     videoElement.play();
     detectObjects();
 })();
+
