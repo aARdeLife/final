@@ -80,9 +80,17 @@ async function drawPredictions(predictions) {
 }
 
 async function detectObjects() {
-    // Use an object detection model to detect objects in the video stream
-    // Draw the bounding boxes on the canvas and display the object class names
+    const model = await cocoSsd.load();
+
+    async function detectFrame() {
+        const predictions = await model.detect(video);
+        drawPredictions(predictions);
+        requestAnimationFrame(detectFrame);
+    }
+
+    detectFrame();
 }
+
 
 (async function() {
     const videoElement = await setupCamera();
