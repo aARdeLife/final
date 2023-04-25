@@ -55,4 +55,26 @@ async function detectObjects() {
   detectObjects();
 })();
 
+
+// ... (the rest of the code remains the same) ...
+
+async function detectObjects() {
+  const model = await cocoSsd.load();
+
+  async function detectFrame() {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height); // Add this line to draw the video feed onto the canvas
+    const predictions = await model.detect(video);
+    drawPredictions(predictions);
+    requestAnimationFrame(detectFrame);
+  }
+
+  detectFrame();
+}
+
+(async function() {
+  const videoElement = await setupCamera();
+  videoElement.play();
+  detectObjects();
+})();
+
    
