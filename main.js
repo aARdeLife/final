@@ -67,38 +67,39 @@ canvas.addEventListener('click', async event => {
     summaryBox.style.display = 'none';
 });
 
-async function detectObjects() {
-    if (typeof cocoSsd === 'undefined') {
-        setTimeout(detectObjects, 50);
-        return;
-    }
-
-    const predictions = await cocoSsd.load().then((model) => model.detect(video));
-
-    currentPredictions = predictions;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(video, 0, 0, video.width, video.height);
-
-    for (const prediction of predictions) {
-        const x = prediction.bbox[0];
-        const y = prediction.bbox[1];
-        const width = prediction.bbox[2];
-        const height = prediction.bbox[3];
-
-        ctx.strokeStyle = '#00FFFF';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, width, height);
-        ctx.fillStyle = '#00FFFF';
-        ctx.font = '14px Arial';
-        ctx.fillText(prediction.class, x, y - 5);
-    }
-
-    requestAnimationFrame(detectObjects);
-}
-
 let currentPredictions = [];
 
-(async function () {
+async function detectObjects() {
+    const model =     await cocoSsd.load();
     const videoElement = await setupCamera();
-   
+    videoElement.play();
+
+    async function detect() {
+        currentPredictions = await model.detect(video);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, video.width, video.height);
+
+        ctx.font = '16px Arial';
+        ctx.lineWidth = 3;
+
+        for (const prediction of currentPredictions) {
+            const [x, y, width, height] = prediction.bbox;
+
+            ctx.strokeStyle = 'red';
+            ctx.strokeRect(x, y, width, height);
+
+            ctx.fillStyle = 'red';
+            ctx.fillText(prediction.class, x, y - 5);
+        }
+
+        requestAnimationFrame(detect);
+    }
+
+    detect();
+}
+
+(async function() {
+    await setupCamera();
+    detectObjects();
+})();
+
