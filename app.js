@@ -35,49 +35,37 @@ async function setupCamera() {
 }
 
 function isPointInRect(x, y, rect) {
-    // Check if a point is inside a rectangle
+    return x >= rect[0] && x <= rect[0] + rect[2] && y >= rect[1] && y <= rect[1] + rect[3];
 }
 
 async function fetchWikipediaSummary(title) {
-    // Fetch a summary of the given title from Wikipedia using the Wikipedia REST API
+    const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+    if (response.ok) {
+        const data = await response.json();
+        return data.extract;
+    } else {
+        return 'No summary available';
+    }
 }
 
 canvas.addEventListener('click', async event => {
-    // Check if the click occurred inside the bounding box of any detected object
-    // If so, fetch and display the Wikipedia summary for the object in the summaryBox div element
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    for (const prediction of currentPredictions) {
+        if (isPointInRect(x, y, prediction.bbox)) {
+            const summary = await fetchWikipediaSummary(prediction.class);
+            summaryBox.style.display = 'block';
+            summaryBox.style.left = `${prediction.bbox[0] + prediction.bbox[2]}px`;
+            summaryBox.style.top = `${prediction.bbox[1]}px`;
+            summaryBox.textContent = summary;
+            return;
+        }
+    }
+
+    summaryBox.style.display = 'none';
 });
-
-function getColorBySize(bbox) {
-    const area = bbox[2] * bbox[3];
-    const maxArea = canvas.width * canvas.height;
-    const ratio = area / maxArea;
-
-    const red = 255;
-    const green = Math.floor(255 * ratio);
-    const blue = 0;
-
-    return `rgb(${red}, ${green}, ${blue})`;
-}
-
-async function drawPredictions(predictions) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.font = '16px sans-serif';
-    ctx.textBaseline = 'top';
-
-    predictions.forEach(prediction => {
-        const x = prediction.bbox[0];
-        const y = prediction.bbox[1];
-        const width = prediction.bbox[2];
-        const height = prediction.bbox[3];
-
-        ctx.strokeStyle = getColorBySize(prediction.bbox);
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, width, height);
-
-        ctx.fillStyle = getColorBySize(prediction.bbox);
-        ctx.fillText(prediction.class, x, y);
-    });
-}
 
 async function detectObjects() {
     const model = await cocoSsd.load();
