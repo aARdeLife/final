@@ -16,13 +16,8 @@ body {
   align-items: center;
 }
 
-video, canvas {
-  position: absolute;
-}
-
 canvas {
   border: 1px solid #ccc;
-  z-index: 1;
 }
 
 button {
