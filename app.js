@@ -118,4 +118,3 @@ async function detectObjects() {
     videoElement.play();
     detectObjects();
 })();
-
